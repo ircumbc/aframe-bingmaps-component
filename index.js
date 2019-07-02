@@ -12,6 +12,18 @@ AFRAME.registerComponent('bingmaps', {
         center: {
             default: [0,0],
             type: 'array'
+        },
+        type: {
+            default: 'aerial',
+            type: 'string'
+        },
+        key: {
+            default: '',
+            type: 'string'
+        },
+        zoom: {
+            default: 0,
+            type: 'int'
         }
     },
 
@@ -23,7 +35,15 @@ AFRAME.registerComponent('bingmaps', {
     /**
     * Called once when component is attached. Generally for initial setup.
     */
-    init: function () { },
+    init: function () {
+
+        this.metadata = {};
+
+        this.get_metadata().then( () => {
+            console.log(this.metadata);
+        });
+
+    },
 
     /**
     * Called when component is attached and when component data changes.
@@ -59,5 +79,38 @@ AFRAME.registerComponent('bingmaps', {
     */
     events: {
         // click: function (evt) { }
+    },
+
+    /**
+     * Request the metadata from Bing Maps that we will use to set the map tile image URLs.
+     */
+    get_metadata: function () {
+        let type = this.data.type;
+        let key = this.data.key;
+
+        var metadata_url = `//dev.virtualearth.net/REST/V1/Imagery/Metadata/${type}?output=json&include=ImageryProviders&key=${key}`;
+
+        return new Promise( (resolve, reject) => {
+            fetch(metadata_url).then( (response) => {
+                return response.json();
+            }).then( (data) => {
+                let imageUrl = data.resourceSets[0].resources[0].imageUrl;
+
+                if (location.protocol === 'https:') {
+                    imageUrl = imageUrl.replace(/^http:/gi, 'https:');
+                }
+
+                this.metadata = {
+                    imageUrl : imageUrl,
+                    imageUrlSubdomains : data.resourceSets[0].resources[0].imageUrlSubdomains
+                };
+
+                resolve();
+            }).catch( (error) => {
+                throw new Error('Failed to get Bing Maps metadata from dev.virtualearth.net.', error);
+                reject();
+            });
+        });
+
     }
 });
