@@ -121,5 +121,28 @@ AFRAME.registerComponent('bingmaps', {
 
     },
 
+    get_tile_siblings: function(quadkey) {
+
+        // children of my parent, I don't care if it includes me.
+        return QuadKeyTools.children( QuadKeyTools.parent(quadkey) );
+
+    },
+
+    get_tile_neighbors: function(quadkey) {
+
+        // get all keys that are adjacent to me, including diagonally.
+        var neighbors = [];
+
+        neighbors.push(QuadKeyTools.sibling(key, 'left'));
+        neighbors.push(QuadKeyTools.sibling( neighbors[neighbors.length - 1], 'up'));
+        neighbors.push(QuadKeyTools.sibling(key, 'right'));
+        neighbors.push(QuadKeyTools.sibling( neighbors[neighbors.length - 1], 'down'));
+        neighbors.push(QuadKeyTools.sibling(key, 'up'));
+        neighbors.push(QuadKeyTools.sibling( neighbors[neighbors.length - 1], 'right'));
+        neighbors.push(QuadKeyTools.sibling(key, 'down'));
+        neighbors.push(QuadKeyTools.sibling( neighbors[neighbors.length - 1], 'left'));
+
+        return neighbors;
+    },
 
 });
