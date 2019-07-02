@@ -43,6 +43,7 @@ AFRAME.registerComponent('bingmaps', {
             console.log(this.get_tile_url('123123123123123'));
         });
 
+        console.log( this.get_tile_siblings('0123') );
     },
 
     /**
@@ -113,7 +114,7 @@ AFRAME.registerComponent('bingmaps', {
         });
     },
 
-    get_tile_url: function(quadkey) {
+    get_tile_url: function (quadkey) {
 
         let index = parseInt(quadkey) & this.metadata.imageUrlSubdomains.length;
         let subdomain = this.metadata.imageUrlSubdomains[index];
@@ -121,28 +122,45 @@ AFRAME.registerComponent('bingmaps', {
 
     },
 
-    get_tile_siblings: function(quadkey) {
+    get_tile_parent: function (quadkey) {
 
-        // children of my parent, I don't care if it includes me.
-        return QuadKeyTools.children( QuadKeyTools.parent(quadkey) );
+        return quadkey.slice(0, -1);
 
     },
 
-    get_tile_neighbors: function(quadkey) {
+    get_tile_children: function (quadkey) {
+
+        return [0,1,2,3].map( i => { return quadkey.concat(i) } );
+
+    },
+
+    get_tile_siblings: function (quadkey) {
+
+        return this.get_tile_children( this.get_tile_parent(quadkey) ).filter( i => { return i !== quadkey } );
+
+    },
+
+    get_tile_neighbors: function (quadkey) {
 
         // get all keys that are adjacent to me, including diagonally.
-        var neighbors = [];
+        var neighbors = this.get_tile_siblings(quadkey);
 
-        neighbors.push(QuadKeyTools.sibling(key, 'left'));
-        neighbors.push(QuadKeyTools.sibling( neighbors[neighbors.length - 1], 'up'));
-        neighbors.push(QuadKeyTools.sibling(key, 'right'));
-        neighbors.push(QuadKeyTools.sibling( neighbors[neighbors.length - 1], 'down'));
-        neighbors.push(QuadKeyTools.sibling(key, 'up'));
-        neighbors.push(QuadKeyTools.sibling( neighbors[neighbors.length - 1], 'right'));
-        neighbors.push(QuadKeyTools.sibling(key, 'down'));
-        neighbors.push(QuadKeyTools.sibling( neighbors[neighbors.length - 1], 'left'));
+        let k = parseInt(quadkey.slice(-1)); // last letter in quadkey
+
+        switch (k) {
+        case 0:
+            break;
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+        }
 
         return neighbors;
     },
+
+
 
 });
