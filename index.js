@@ -40,7 +40,7 @@ AFRAME.registerComponent('bingmaps', {
         this.metadata = {};
 
         this.get_metadata().then( () => {
-            console.log(this.metadata);
+            console.log(this.get_tile_url('123123123123123'));
         });
 
     },
@@ -111,6 +111,15 @@ AFRAME.registerComponent('bingmaps', {
                 reject();
             });
         });
+    },
 
-    }
+    get_tile_url: function(quadkey) {
+
+        let index = parseInt(quadkey) & this.metadata.imageUrlSubdomains.length;
+        let subdomain = this.metadata.imageUrlSubdomains[index];
+        return this.metadata.imageUrl.replace('{subdomain}', subdomain).replace('{quadkey}', quadkey);
+
+    },
+
+
 });
