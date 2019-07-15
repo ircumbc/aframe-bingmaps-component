@@ -4,6 +4,10 @@ if (typeof AFRAME === 'undefined') {
     throw new Error('Component attempted to register before AFRAME was available.');
 }
 
+import './lib/clamp.js';
+import Quadkey from './lib/quadkey.js';
+import BingMaps from './lib/bingmaps.js';
+
 /**
  * Bing Maps component for A-Frame.
  */
@@ -37,13 +41,16 @@ AFRAME.registerComponent('bingmaps', {
     */
     init: function () {
 
+        let quadkeytools = new Quadkey();
+        let bingmaps = new BingMaps(this.data.type, this.data.key);
+
         this.metadata = {};
 
-        this.get_metadata().then( () => {
-            console.log(this.get_tile_url('123123123123123'));
+        bingmaps.getMetadata().then( (response) => {
+            this.metadata = response;
+            console.log(bingmaps.quadkeyToUrl('01230123'));
         });
 
-        console.log( this.get_tile_siblings('0123') );
     },
 
     /**
@@ -80,87 +87,5 @@ AFRAME.registerComponent('bingmaps', {
     */
     events: {
         // click: function (evt) { }
-    },
-
-    /**
-     * Request the metadata from Bing Maps that we will use to set the map tile image URLs.
-     */
-    get_metadata: function () {
-        let type = this.data.type;
-        let key = this.data.key;
-
-        var metadata_url = `//dev.virtualearth.net/REST/V1/Imagery/Metadata/${type}?output=json&include=ImageryProviders&key=${key}`;
-
-        return new Promise( (resolve, reject) => {
-            fetch(metadata_url).then( (response) => {
-                return response.json();
-            }).then( (data) => {
-                let imageUrl = data.resourceSets[0].resources[0].imageUrl;
-
-                if (location.protocol === 'https:') {
-                    imageUrl = imageUrl.replace(/^http:/gi, 'https:');
-                }
-
-                this.metadata = {
-                    imageUrl : imageUrl,
-                    imageUrlSubdomains : data.resourceSets[0].resources[0].imageUrlSubdomains
-                };
-
-                resolve();
-            }).catch( (error) => {
-                throw new Error('Failed to get Bing Maps metadata from dev.virtualearth.net.', error);
-                reject();
-            });
-        });
-    },
-
-    get_tile_url: function (quadkey) {
-
-        let index = parseInt(quadkey) & this.metadata.imageUrlSubdomains.length;
-        let subdomain = this.metadata.imageUrlSubdomains[index];
-        return this.metadata.imageUrl.replace('{subdomain}', subdomain).replace('{quadkey}', quadkey);
-
-    },
-
-    get_tile_parent: function (quadkey) {
-
-        return quadkey.slice(0, -1);
-
-    },
-
-    get_tile_children: function (quadkey) {
-
-        return [0,1,2,3].map( i => { return quadkey.concat(i) } );
-
-    },
-
-    get_tile_siblings: function (quadkey) {
-
-        return this.get_tile_children( this.get_tile_parent(quadkey) ).filter( i => { return i !== quadkey } );
-
-    },
-
-    get_tile_neighbors: function (quadkey) {
-
-        // get all keys that are adjacent to me, including diagonally.
-        var neighbors = this.get_tile_siblings(quadkey);
-
-        let k = parseInt(quadkey.slice(-1)); // last letter in quadkey
-
-        switch (k) {
-        case 0:
-            break;
-        case 1:
-            break;
-        case 2:
-            break;
-        case 3:
-            break;
-        }
-
-        return neighbors;
-    },
-
-
-
+    }
 });
